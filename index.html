@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI Calculatre</title>
+    <style>
+        body{
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+        }
+        .BOX{
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            width: 350px;
+        }
+        h2{
+            color: #333;
+        }
+        input{
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1 solid;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        button{
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover{
+            background-color: #064487;
+        }
+        #result {
+            margin-top: 25px; 
+            padding: 15px; 
+            border-radius: 6px; 
+            display: none; 
+            font-size: 14px; 
+            font-weight: bold; 
+        }
+        .error { 
+            background-color: #ffeef0; 
+            color: #d9383a; 
+            border: 1px solid #fdb8b9; 
+        }
+        .success { 
+            background-color: #e6f4ea; 
+            color: #137333; 
+            border: 1px solid #a3cfbb; 
+        }
+        p{
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="BOX">
+
+        <h2> Calculate BMI </h2>
+        <p>Track your health in seconds. Type your numbers below for a quick, accurate BMI analysis.</p>
+
+        <input type="number" id="user_weight" step="0.01" placeholder="Entre weight in killogramme .">
+        <input type="number" id="user_height" step="0.01" placeholder="Entre height in meter .">
+
+        <button onclick="calculateBMI()">Calculate BMI</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function calculateBMI(){
+
+            const height = Number(document.getElementById('user_height').value);
+            const weight = Number(document.getElementById('user_weight').value);
+            const resultDiv = document.getElementById('result') ;
+
+            // reset resultat du box
+
+            resultDiv.style.display = 'none';
+            resultDiv.className = '';
+
+            if (!height || !weight) {
+
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = 'please fill out both fields.';
+                return ;
+            }
+            try{
+                const repons = await fetch(`/calculateBMI?height=${height}&weight=${weight}`);
+                
+                if (!repons.ok){
+                    const errordata = await repons.json();
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'error';
+
+                    resultDiv.innerHTML = `Error: ${errordata.detail[0].msg || 'Invalid Input'}`;
+
+                    return ;
+
+                }
+
+                const data = await repons.json() ;
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'success';
+                resultDiv.innerHTML = `BMI : ${data.bmi}<br>${data.message}`;
+            }
+            
+                catch (error){
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'error';
+                    resultDiv.innerHTML = 'Could not connect to the api server';
+                }
+            
+        }
+    </script>
+
+</body>
+</html>
